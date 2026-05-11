@@ -1,0 +1,8 @@
+{
+  "name": "Apple Dark",
+  "author": "牛马一号",
+  "version": "1.0.0",
+  "description": "Apple风格暗黑主题，网格卡片布局，流畅动效",
+  "thumbnail": "/themes/apple_dark/thumb.png",
+  "features": ["apple-design", "grid-layout", "theme-toggle", "wechat-modal", "smooth-animations"]
+}

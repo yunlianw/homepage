@@ -1,0 +1,8 @@
+{
+  "name": "Tech Minimal",
+  "author": "牛马一号",
+  "version": "1.0.0",
+  "description": "极简科技风，玻璃态卡片，3D翻书项目展示，粒子+鼠标跟随光晕",
+  "thumbnail": "/themes/tech_minimal/thumb.png",
+  "features": ["glass-morphism", "cursor-glow", "3d-book-flip", "particle-effect", "scan-text"]
+}

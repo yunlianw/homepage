@@ -1,0 +1,8 @@
+{
+  "name": "Default Bento",
+  "author": "牛马一号",
+  "version": "1.0.0",
+  "description": "Bento卡片风格，温暖米白配色，日间/夜间双主题切换",
+  "thumbnail": "/themes/default_bento/thumb.png",
+  "features": ["bento-grid", "dual-theme", "particle-effect", "svg-travel-map"]
+}

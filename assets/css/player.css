@@ -1,0 +1,32 @@
+/* 🎵 迷你音乐播放器 */
+.mini-player{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;align-items:center;gap:0;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:16px;padding:8px 12px 8px 8px;box-shadow:0 8px 32px rgba(0,0,0,0.18);transition:all .3s;max-width:320px;opacity:0;transform:translateY(20px);pointer-events:none}
+.mini-player.active{opacity:1;transform:translateY(0);pointer-events:all}
+.mini-player:hover{border-color:var(--glass-border-hover);box-shadow:0 12px 40px rgba(0,0,0,0.25)}
+.mp-play{width:38px;height:38px;border-radius:50%;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s}
+.mp-play:hover{transform:scale(1.1)}
+.mp-play:active{transform:scale(0.95)}
+.mp-prev,.mp-next{width:24px;height:38px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .2s}
+.mp-prev:hover,.mp-next:hover{color:var(--accent)}
+.mp-info{padding:0 10px;overflow:hidden;flex:1;min-width:0}
+.mp-title{font-size:12px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-time{font-size:10px;color:var(--text3);margin-top:2px}
+.mp-bar{width:80px;height:3px;background:rgba(128,128,128,0.15);border-radius:2px;cursor:pointer;flex-shrink:0;position:relative;overflow:hidden}
+.mp-bar-fill{height:100%;border-radius:2px;background:var(--accent);width:0;transition:width .3s linear}
+.mp-close{width:24px;height:24px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;border-radius:50%;margin-left:4px;flex-shrink:0;transition:color .2s}
+.mp-close:hover{color:var(--text)}
+.mp-visualizer{display:flex;align-items:flex-end;gap:1px;height:18px;margin-left:6px;flex-shrink:0}
+.mp-visualizer span{width:2px;background:var(--accent);border-radius:1px;transition:height .15s}
+.mp-visualizer.playing span{animation:vbar 0.6s ease infinite alternate}
+@keyframes vbar{0%{height:3px}100%{height:100%}}
+.mp-list-btn{width:24px;height:38px;border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:color .2s}
+.mp-list-btn:hover{color:var(--accent)}
+.mp-list{position:absolute;bottom:100%;right:0;margin-bottom:8px;background:var(--glass);border:1px solid var(--glass-border);backdrop-filter:blur(20px);border-radius:12px;padding:8px;min-width:180px;max-height:200px;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.18)}
+.mp-list-item{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .2s}
+.mp-list-item:hover{background:rgba(128,128,128,0.15)}
+.mp-list-item.on{background:var(--accent);color:#fff}
+.mp-list-item.on .mp-list-num,.mp-list-item.on .mp-list-title{color:#fff}
+.mp-list-num{width:20px;font-size:10px;color:var(--text3);text-align:center}
+.mp-list-title{font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-theme="light"] .mini-player{--glass:rgba(255,255,255,0.7);--glass-border:rgba(255,255,255,0.8);--accent:#c17d4e;--text:#2a2520;--text3:#aaa49c;--glass-border-hover:rgba(193,125,78,0.4)}
+[data-theme="dark"] .mini-player{--glass:rgba(20,25,40,0.85);--glass-border:rgba(255,255,255,0.08);--accent:#00d2ff;--text:#e8edf5;--text3:#3d4f68;--glass-border-hover:rgba(0,210,255,0.35)}
+@media(max-width:680px){.mini-player{bottom:16px;right:16px;left:16px;max-width:none}}
