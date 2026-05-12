@@ -1,23 +1,25 @@
 -- 个人主页展示系统 - 数据库结构
--- 版本: v1.1.0
--- 日期: 2026-05-11
--- 导入: mysql -u root -p 数据库名 < schema.sql
+-- 版本: v1.2.3
+-- 日期: 2026-05-12
+-- 说明: 纯净建表，无初始数据（数据由demo.sql导入）
 
 CREATE TABLE IF NOT EXISTS `config_data` (
   `id` int(11) NOT NULL DEFAULT '1',
-  `basic_json` text COMMENT '基本信息JSON',
-  `hero_stats_json` text COMMENT '统计数据JSON',
-  `social_json` text COMMENT '社交链接JSON',
-  `list_data_json` text COMMENT '列表数据JSON',
-  `hobby_json` text COMMENT '兴趣爱好JSON',
-  `system_json` text COMMENT '系统配置JSON',
-  `blocks_json` text COMMENT '板块开关JSON',
-  `seo_json` text COMMENT 'SEO配置JSON',
-  `ext_json` text COMMENT '扩展配置JSON',
-  `icp` varchar(100) DEFAULT NULL COMMENT '备案号',
-  `copyright` varchar(255) DEFAULT NULL COMMENT '版权信息',
+  `basic_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hero_stats_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `social_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `list_data_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hobby_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `system_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `seo_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ext_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `blocks_json` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `icp_info` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  `footer_copyright` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT '',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='站点配置数据';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='站点配置数据';
 
 CREATE TABLE IF NOT EXISTS `articles` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -33,7 +35,7 @@ CREATE TABLE IF NOT EXISTS `articles` (
   PRIMARY KEY (`id`),
   KEY `idx_status` (`status`),
   KEY `idx_sort` (`sort_order`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文章/动态表';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章/动态表';
 
 CREATE TABLE IF NOT EXISTS `admin_users` (
   `id` int(11) NOT NULL DEFAULT '1',
@@ -43,10 +45,4 @@ CREATE TABLE IF NOT EXISTS `admin_users` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
-
--- 初始管理员账号（密码: admin888）
-(1, 'admin', '$2y$10$default_hash_replace_me', 'admin');
-
--- 初始配置数据
-(1, '{}', '{"theme_id":"default_bento"}');
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='管理员表';
