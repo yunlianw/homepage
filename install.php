@@ -55,17 +55,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 2) {
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$db_name}` DEFAULT CHARSET utf8mb4");
             $pdo->exec("USE `{$db_name}`");
 
-            // 导入SQL（优先schema.sql，纯净安装）
-            $sqlFiles = [
-                __DIR__ . '/database/schema.sql',      // 纯净版
-                __DIR__ . '/database/gerenzhuye.sql',  // 演示版（可选）
+            // 导入SQL：先建表，再导入数据
+            // 1. 建表（schema.sql）
+            $schemaFile = __DIR__ . '/database/schema.sql';
+            if (file_exists($schemaFile)) {
+                $pdo->exec(file_get_contents($schemaFile));
+            }
+            // 2. 数据（demo.sql 或 gerenzhuye.sql）
+            $dataFiles = [
+                __DIR__ . '/database/demo.sql',        // 带演示数据
+                __DIR__ . '/database/gerenzhuye.sql',  // 兼容旧版
             ];
-            foreach ($sqlFiles as $sqlFile) {
-                if (file_exists($sqlFile)) {
-                    $sql = file_get_contents($sqlFile);
-                    // 执行SQL（支持多条语句）
-                    $pdo->exec($sql);
-                    break; // 只导入一个
+            foreach ($dataFiles as $dataFile) {
+                if (file_exists($dataFile)) {
+                    $pdo->exec(file_get_contents($dataFile));
+                    break;
                 }
             }
 
