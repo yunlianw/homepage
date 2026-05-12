@@ -282,23 +282,31 @@
     <div style="margin-top:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border)">
         <div style="font-size:13px;font-weight:500;margin-bottom:10px">✨ 文字生成图标</div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <input type="text" id="favText" value="峰" placeholder="输入1-2个字" maxlength="2" style="width:80px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;text-align:center">
-            <select id="favColor" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px">
-                <option value="blue">🔵 蓝色</option>
-                <option value="purple">🟣 紫色</option>
-                <option value="green">🟢 绿色</option>
-                <option value="orange">🟠 橙色</option>
-                <option value="red">🔴 红色</option>
-                <option value="teal">🩵 青色</option>
-                <option value="pink">🩷 粉色</option>
-                <option value="dark">⬛ 深色</option>
-            </select>
-            <button type="button" class="btn" onclick="previewFavicon()" style="padding:6px 14px;font-size:13px">预览</button>
+            <input type="text" id="favText" value="峰" placeholder="输入1-2个字" maxlength="2" style="width:70px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;text-align:center">
+            <div style="display:flex;align-items:center;gap:6px">
+                <label style="font-size:12px;color:var(--text3)">背景</label>
+                <input type="color" id="favBgColor" value="#3B82F6" style="width:32px;height:32px;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:1px;background:transparent">
+                <input type="text" id="favBgHex" value="#3B82F6" maxlength="7" style="width:80px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-family:monospace">
+            </div>
+            <div style="display:flex;align-items:center;gap:6px">
+                <label style="font-size:12px;color:var(--text3)">文字</label>
+                <input type="color" id="favTextColor" value="#FFFFFF" style="width:32px;height:32px;border:1px solid var(--border);border-radius:6px;cursor:pointer;padding:1px;background:transparent">
+                <input type="text" id="favTextHex" value="#FFFFFF" maxlength="7" style="width:80px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:12px;font-family:monospace">
+            </div>
             <button type="button" class="btn primary" onclick="generateFavicon()" style="padding:6px 14px;font-size:13px">生成并使用</button>
         </div>
-        <div id="favGenPreview" style="margin-top:10px;display:none">
-            <img id="favGenImg" style="width:32px;height:32px;image-rendering:pixelated;border:1px solid var(--border);border-radius:6px">
-            <span style="font-size:11px;color:var(--muted);margin-left:8px">预览效果</span>
+        <div id="favGenPreview" style="margin-top:12px;display:flex;align-items:center;gap:12px">
+            <div id="favPreviewBox" style="width:64px;height:64px;border-radius:12px;overflow:hidden;background:#3B82F6;display:flex;align-items:center;justify-content:center">
+                <span style="color:#fff;font-size:24px;font-weight:700;line-height:1">峰</span>
+            </div>
+            <div>
+                <div style="font-size:11px;color:var(--muted)">实时预览</div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px">修改颜色后自动更新</div>
+            </div>
+        </div>
+        <div style="margin-top:10px">
+            <label style="font-size:11px;color:var(--muted);cursor:pointer">预设配色：</label>
+            <span id="presetColors" style="display:inline-flex;gap:4px;margin-left:4px;flex-wrap:wrap"></span>
         </div>
     </div>
     <input type="hidden" name="seo[favicon]" id="faviconUrl" value="<?=h($faviconUrl)?>">
@@ -440,6 +448,73 @@ function updateThemeDesc(){
 switchTab('<?=$tab?>');
 
 // === Favicon功能 ===
+// 预设配色
+var faviconPresets = [
+  {bg:'#3B82F6',text:'#FFFFFF',name:'蓝'},
+  {bg:'#8B5CF6',text:'#FFFFFF',name:'紫'},
+  {bg:'#10B981',text:'#FFFFFF',name:'绿'},
+  {bg:'#F97316',text:'#FFFFFF',name:'橙'},
+  {bg:'#EF4444',text:'#FFFFFF',name:'红'},
+  {bg:'#06B6D4',text:'#FFFFFF',name:'青'},
+  {bg:'#EC4899',text:'#FFFFFF',name:'粉'},
+  {bg:'#1E1E1E',text:'#FFFFFF',name:'深'},
+  {bg:'#FFFFFF',text:'#3B82F6',name:'反'},
+  {bg:'#FEF3C7',text:'#B45309',name:'金'},
+];
+
+// 生成预设按钮
+(function(){
+  var html='';
+  faviconPresets.forEach(function(p,i){
+    html+='<button type="button" onclick="applyPreset('+i+')" style="width:22px;height:22px;border-radius:6px;border:1px solid var(--border);cursor:pointer;background:'+p.bg+';position:relative" title="'+p.name+'"><span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;font-weight:700;color:'+p.text+'">峰</span></button>';
+  });
+  document.getElementById('presetColors').innerHTML=html;
+})();
+
+function applyPreset(idx){
+  var p=faviconPresets[idx];
+  document.getElementById('favBgColor').value=p.bg;
+  document.getElementById('favBgHex').value=p.bg;
+  document.getElementById('favTextColor').value=p.text;
+  document.getElementById('favTextHex').value=p.text;
+  updateFaviconPreview();
+}
+
+// 颜色选择器和hex输入框双向同步
+document.getElementById('favBgColor').addEventListener('input',function(e){
+  document.getElementById('favBgHex').value=e.target.value.toUpperCase();
+  updateFaviconPreview();
+});
+document.getElementById('favBgHex').addEventListener('input',function(e){
+  var v=e.target.value;
+  if(/^#[0-9a-fA-F]{6}$/.test(v)){
+    document.getElementById('favBgColor').value=v;
+    updateFaviconPreview();
+  }
+});
+document.getElementById('favTextColor').addEventListener('input',function(e){
+  document.getElementById('favTextHex').value=e.target.value.toUpperCase();
+  updateFaviconPreview();
+});
+document.getElementById('favTextHex').addEventListener('input',function(e){
+  var v=e.target.value;
+  if(/^#[0-9a-fA-F]{6}$/.test(v)){
+    document.getElementById('favTextColor').value=v;
+    updateFaviconPreview();
+  }
+});
+document.getElementById('favText').addEventListener('input',updateFaviconPreview);
+
+// 实时预览（本地）
+function updateFaviconPreview(){
+  var text=document.getElementById('favText').value||'峰';
+  var bg=document.getElementById('favBgColor').value;
+  var fg=document.getElementById('favTextColor').value;
+  var box=document.getElementById('favPreviewBox');
+  box.style.background=bg;
+  box.innerHTML='<span style="color:'+fg+';font-size:24px;font-weight:700;line-height:1">'+text.substr(0,2)+'</span>';
+}
+
 // 上传favicon
 document.getElementById('faviconUpload').addEventListener('change', function(e){
   var file = e.target.files[0];
@@ -451,7 +526,7 @@ document.getElementById('faviconUpload').addEventListener('change', function(e){
     .then(d=>{
       if(d.ok){
         document.getElementById('faviconUrl').value = d.url;
-        document.getElementById('faviconPreview').innerHTML = '<img src="'+d.url+'?t='+Date.now()+'" style="width:48px;height:48px;image-rendering:pixelated" id="faviconImg">';
+        document.getElementById('faviconPreview').innerHTML = '<img src="'+d.url+'?t='+Date.now()+'" style="width:48px;height:48px;image-rendering:pixelated;border-radius:8px" id="faviconImg">';
         document.getElementById('uploadMsg').textContent = '✓ ' + d.msg;
         document.getElementById('uploadMsg').style.color = 'var(--green)';
       } else {
@@ -461,35 +536,22 @@ document.getElementById('faviconUpload').addEventListener('change', function(e){
     });
 });
 
-// 预览生成favicon
-function previewFavicon(){
-  var text = document.getElementById('favText').value.trim();
-  var color = document.getElementById('favColor').value;
-  if(!text){ return; }
-  fetch('favicon.php?action=preview&text='+encodeURIComponent(text)+'&color='+color)
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.ok){
-        document.getElementById('favGenImg').src = d.preview;
-        document.getElementById('favGenPreview').style.display = 'block';
-      }
-    });
-}
-
 // 生成并使用favicon
 function generateFavicon(){
   var text = document.getElementById('favText').value.trim();
-  var color = document.getElementById('favColor').value;
-  if(!text){ return; }
+  if(!text){ alert('请输入文字'); return; }
+  var bgColor = document.getElementById('favBgHex').value;
+  var textColor = document.getElementById('favTextHex').value;
   var fd = new FormData();
   fd.append('text', text);
-  fd.append('color', color);
+  fd.append('bgColor', bgColor);
+  fd.append('textColor', textColor);
   fetch('favicon.php?action=generate', {method:'POST', body:fd})
     .then(r=>r.json())
     .then(d=>{
       if(d.ok){
         document.getElementById('faviconUrl').value = d.url;
-        document.getElementById('faviconPreview').innerHTML = '<img src="'+d.url+'?t='+Date.now()+'" style="width:48px;height:48px;image-rendering:pixelated" id="faviconImg">';
+        document.getElementById('faviconPreview').innerHTML = '<img src="'+d.url+'?t='+Date.now()+'" style="width:48px;height:48px;image-rendering:pixelated;border-radius:8px" id="faviconImg">';
         document.getElementById('uploadMsg').textContent = '✓ ' + d.msg;
         document.getElementById('uploadMsg').style.color = 'var(--green)';
       } else {
@@ -498,4 +560,7 @@ function generateFavicon(){
       }
     });
 }
+
+// 初始化预览
+updateFaviconPreview();
 </script>

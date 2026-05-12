@@ -1,116 +1,90 @@
 <?php
 /**
  * Favicon生成器 - 文字转图标
- * 支持单字/双字生成漂亮的背景文字图标
+ * 支持自定义背景色、字体色（hex颜色代码）
  */
 class FaviconGenerator {
     
     /**
-     * 预设配色方案
+     * hex颜色转RGB数组
      */
-    private static $colorSchemes = [
-        'blue' => [
-            'bg' => [59, 130, 246],      // 蓝色背景
-            'text' => [255, 255, 255],   // 白字
-        ],
-        'purple' => [
-            'bg' => [147, 51, 234],      // 紫色
-            'text' => [255, 255, 255],
-        ],
-        'green' => [
-            'bg' => [34, 197, 94],       // 绿色
-            'text' => [255, 255, 255],
-        ],
-        'orange' => [
-            'bg' => [249, 115, 22],      // 橙色
-            'text' => [255, 255, 255],
-        ],
-        'red' => [
-            'bg' => [239, 68, 68],       // 红色
-            'text' => [255, 255, 255],
-        ],
-        'teal' => [
-            'bg' => [20, 184, 166],      // 青色
-            'text' => [255, 255, 255],
-        ],
-        'pink' => [
-            'bg' => [236, 72, 153],      // 粉色
-            'text' => [255, 255, 255],
-        ],
-        'dark' => [
-            'bg' => [30, 30, 30],        // 深色
-            'text' => [255, 255, 255],
-        ],
-    ];
+    public static function hexToRgb(string $hex): array {
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) === 3) {
+            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        }
+        if (!preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
+            return [59, 130, 246]; // 默认蓝色
+        }
+        return [
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
+        ];
+    }
+    
+    /**
+     * RGB数组转hex
+     */
+    public static function rgbToHex(array $rgb): string {
+        return sprintf('#%02X%02X%02X', $rgb[0], $rgb[1], $rgb[2]);
+    }
     
     /**
      * 生成favicon
      * @param string $text 文字（1-2个字符最佳）
-     * @param string $colorScheme 配色方案
+     * @param string $bgColor 背景颜色hex（如 #3B82F6）
+     * @param string $textColor 文字颜色hex（如 #FFFFFF）
      * @param int $size 尺寸（默认32x32）
      * @return string PNG二进制数据
      */
-    public static function generate(string $text, string $colorScheme = 'blue', int $size = 32): string {
-        // 检查GD库
+    public static function generate(string $text, string $bgColor = '#3B82F6', string $textColor = '#FFFFFF', int $size = 32): string {
         if (!function_exists('imagecreatetruecolor')) {
             throw new Exception('PHP GD库未安装');
         }
         
-        // 获取配色
-        $scheme = self::$colorSchemes[$colorScheme] ?? self::$colorSchemes['blue'];
+        $bgRgb = self::hexToRgb($bgColor);
+        $textRgb = self::hexToRgb($textColor);
         
-        // 创建图像
         $img = imagecreatetruecolor($size, $size);
-        
-        // 启用抗锯齿
         imageantialias($img, true);
         
-        // 分配颜色
-        $bgColor = imagecolorallocate($img, $scheme['bg'][0], $scheme['bg'][1], $scheme['bg'][2]);
-        $textColor = imagecolorallocate($img, $scheme['text'][0], $scheme['text'][1], $scheme['text'][2]);
+        // 开启透明通道
+        imagesavealpha($img, true);
+        imagealphablending($img, true);
         
-        // 填充背景（圆角效果）
-        imagefill($img, 0, 0, $bgColor);
+        $bg = imagecolorallocate($img, $bgRgb[0], $bgRgb[1], $bgRgb[2]);
+        $fg = imagecolorallocate($img, $textRgb[0], $textRgb[1], $textRgb[2]);
         
-        // 绘制圆角矩形（简化版，直接用背景色填充）
-        // 如果需要更精细的圆角，可以用imagesetpixel逐像素绘制
+        // 绘制圆角背景
+        self::drawRoundedRect($img, 0, 0, $size, $size, (int)($size * 0.22), $bg);
         
-        // 处理文字
-        $text = mb_substr(trim($text), 0, 2, 'UTF-8'); // 最多2个字
+        // 文字
+        $text = mb_substr(trim($text), 0, 2, 'UTF-8');
         $textLen = mb_strlen($text, 'UTF-8');
+        $fontSize = (int)($textLen === 1 ? $size * 0.62 : $size * 0.42);
         
-        // 字体大小
-        $fontSize = $textLen === 1 ? $size * 0.65 : $size * 0.45;
-        
-        // 查找字体文件
         $fontFile = self::findFont();
         
-        // 计算文字位置（居中）
         if ($fontFile) {
-            // 使用TrueType字体
             $bbox = imagettfbbox($fontSize, 0, $fontFile, $text);
-            $textWidth = $bbox[2] - $bbox[0];
-            $textHeight = $bbox[1] - $bbox[7];
-            $x = ($size - $textWidth) / 2 - $bbox[0];
-            $y = ($size - $textHeight) / 2 + $textHeight;
-            
-            imagettftext($img, $fontSize, 0, (int)$x, (int)$y, $textColor, $fontFile, $text);
+            $tw = $bbox[2] - $bbox[0];
+            $th = $bbox[1] - $bbox[7];
+            $x = ($size - $tw) / 2 - $bbox[0];
+            $y = ($size - $th) / 2 + $th;
+            imagettftext($img, $fontSize, 0, (int)$x, (int)$y, $fg, $fontFile, $text);
         } else {
-            // 使用内置字体
-            $font = 5; // 内置最大字体
-            $textWidth = imagefontwidth($font) * strlen($text);
-            $textHeight = imagefontheight($font);
-            $x = ($size - $textWidth) / 2;
-            $y = ($size - $textHeight) / 2;
-            
-            imagestring($img, $font, (int)$x, (int)$y, $text, $textColor);
+            $font = 5;
+            $tw = imagefontwidth($font) * mb_strlen($text);
+            $th = imagefontheight($font);
+            $x = ($size - $tw) / 2;
+            $y = ($size - $th) / 2;
+            imagestring($img, $font, (int)$x, (int)$y, $text, $fg);
         }
         
-        // 输出PNG
         ob_start();
-        imagepng($img, null, 9); // 最高压缩
+        imagepng($img, null, 9);
         $data = ob_get_clean();
-        // PHP 8.0+ imagedestroy无效果，PHP 8.5+ 废弃，保留兼容性
         if (PHP_VERSION_ID < 80000) {
             imagedestroy($img);
         }
@@ -119,74 +93,63 @@ class FaviconGenerator {
     }
     
     /**
+     * 绘制圆角矩形并填充
+     */
+    private static function drawRoundedRect($img, int $x, int $y, int $w, int $h, int $r, $color): void {
+        $r = (int)min($r, $w / 2, $h / 2);
+        imagefilledrectangle($img, $x, $y, $x + $w, $y + $h, $color);
+        // 四角用背景色覆盖成圆角（用透明色遮挡不行，改用重新绘制方案）
+        // 简化：直接填充圆角矩形
+        $bg = imagecolortransparent($img);
+        $mask = imagecreatetruecolor($w, $h);
+        imagesavealpha($mask, true);
+        $transparent = imagecolorallocatealpha($mask, 0, 0, 0, 127);
+        imagefill($mask, 0, 0, $transparent);
+        $maskColor = imagecolorallocate($mask, 255, 255, 255);
+        imagefilledrectangle($mask, $r, 0, $w - $r, $h, $maskColor);
+        imagefilledrectangle($mask, 0, $r, $w, $h - $r, $maskColor);
+        // 四个圆角
+        imagefilledarc($mask, $r, $r, $r * 2, $r * 2, 180, 270, $maskColor, IMG_ARC_PIE);
+        imagefilledarc($mask, $w - $r, $r, $r * 2, $r * 2, 270, 360, $maskColor, IMG_ARC_PIE);
+        imagefilledarc($mask, $r, $h - $r, $r * 2, $r * 2, 90, 180, $maskColor, IMG_ARC_PIE);
+        imagefilledarc($mask, $w - $r, $h - $r, $r * 2, $r * 2, 0, 90, $maskColor, IMG_ARC_PIE);
+        // 应用遮罩
+        imagesavealpha($img, true);
+        imagealphablending($img, true);
+        imagecopy($img, $mask, $x, $y, 0, 0, $w, $h);
+        if (PHP_VERSION_ID < 80000) {
+            imagedestroy($mask);
+        }
+    }
+    
+    /**
      * 查找可用的中文字体
      */
     private static function findFont(): ?string {
-        // 优先使用网站目录下的字体（绕过open_basedir限制）
         $webFonts = [
             ROOT_PATH . '/assets/fonts/DroidSansFallbackFull.ttf',
             ROOT_PATH . '/assets/fonts/wqy-zenhei.ttc',
         ];
         foreach ($webFonts as $font) {
-            if (file_exists($font)) {
-                return $font;
-            }
+            if (file_exists($font)) return $font;
         }
         
-        // 系统字体路径（可能在open_basedir限制下无法访问）
         $fonts = [
-            '/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf', // Debian Droid（中文）
-            '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',           // WenQuanYi
+            '/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf',
+            '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',
             '/usr/share/fonts/truetype/wqy/wqy-microhei.ttc',
-            '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc', // Noto
+            '/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc',
             '/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc',
-            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',        // Debian
-            '/usr/share/fonts/TTF/DejaVuSans.ttf',
-            '/System/Library/Fonts/PingFang.ttc',                      // macOS
-            '/System/Library/Fonts/STHeiti Light.ttc',
-            'C:/Windows/Fonts/msyh.ttc',                               // Windows 微软雅黑
+            '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+            '/System/Library/Fonts/PingFang.ttc',
+            'C:/Windows/Fonts/msyh.ttc',
             'C:/Windows/Fonts/simhei.ttf',
         ];
         
         foreach ($fonts as $font) {
-            if (file_exists($font)) {
-                return $font;
-            }
+            if (file_exists($font)) return $font;
         }
         
         return null;
-    }
-    
-    /**
-     * 获取所有配色方案
-     */
-    public static function getColorSchemes(): array {
-        return array_keys(self::$colorSchemes);
-    }
-    
-    /**
-     * 生成并保存favicon文件
-     * @return string 保存的相对路径
-     */
-    public static function save(string $text, string $colorScheme, string $saveDir): string {
-        // 生成32x32 favicon
-        $png32 = self::generate($text, $colorScheme, 32);
-        
-        // 生成16x16版本
-        $png16 = self::generate($text, $colorScheme, 16);
-        
-        // 确保目录存在
-        if (!is_dir($saveDir)) {
-            mkdir($saveDir, 0755, true);
-        }
-        
-        // 保存文件
-        $filename = 'favicon_' . time() . '.png';
-        file_put_contents($saveDir . '/' . $filename, $png32);
-        
-        // 同时保存16x16版本
-        file_put_contents($saveDir . '/favicon_16_' . time() . '.png', $png16);
-        
-        return '/assets/images/' . $filename;
     }
 }
