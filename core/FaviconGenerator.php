@@ -14,20 +14,13 @@ class FaviconGenerator {
             $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
         }
         if (!preg_match('/^[0-9a-fA-F]{6}$/', $hex)) {
-            return [59, 130, 246]; // 默认蓝色
+            return [59, 130, 246];
         }
         return [
             hexdec(substr($hex, 0, 2)),
             hexdec(substr($hex, 2, 2)),
             hexdec(substr($hex, 4, 2)),
         ];
-    }
-    
-    /**
-     * RGB数组转hex
-     */
-    public static function rgbToHex(array $rgb): string {
-        return sprintf('#%02X%02X%02X', $rgb[0], $rgb[1], $rgb[2]);
     }
     
     /**
@@ -47,17 +40,15 @@ class FaviconGenerator {
         $textRgb = self::hexToRgb($textColor);
         
         $img = imagecreatetruecolor($size, $size);
-        imageantialias($img, true);
-        
-        // 开启透明通道
         imagesavealpha($img, true);
-        imagealphablending($img, true);
+        imagealphablending($img, false);
         
+        // 背景色
         $bg = imagecolorallocate($img, $bgRgb[0], $bgRgb[1], $bgRgb[2]);
-        $fg = imagecolorallocate($img, $textRgb[0], $textRgb[1], $textRgb[2]);
+        imagefill($img, 0, 0, $bg);
         
-        // 绘制圆角背景
-        self::drawRoundedRect($img, 0, 0, $size, $size, (int)($size * 0.22), $bg);
+        // 文字颜色
+        $fg = imagecolorallocate($img, $textRgb[0], $textRgb[1], $textRgb[2]);
         
         // 文字
         $text = mb_substr(trim($text), 0, 2, 'UTF-8');
@@ -75,7 +66,7 @@ class FaviconGenerator {
             imagettftext($img, $fontSize, 0, (int)$x, (int)$y, $fg, $fontFile, $text);
         } else {
             $font = 5;
-            $tw = imagefontwidth($font) * mb_strlen($text);
+            $tw = imagefontwidth($font) * strlen($text);
             $th = imagefontheight($font);
             $x = ($size - $tw) / 2;
             $y = ($size - $th) / 2;
@@ -90,36 +81,6 @@ class FaviconGenerator {
         }
         
         return $data;
-    }
-    
-    /**
-     * 绘制圆角矩形并填充
-     */
-    private static function drawRoundedRect($img, int $x, int $y, int $w, int $h, int $r, $color): void {
-        $r = (int)min($r, $w / 2, $h / 2);
-        imagefilledrectangle($img, $x, $y, $x + $w, $y + $h, $color);
-        // 四角用背景色覆盖成圆角（用透明色遮挡不行，改用重新绘制方案）
-        // 简化：直接填充圆角矩形
-        $bg = imagecolortransparent($img);
-        $mask = imagecreatetruecolor($w, $h);
-        imagesavealpha($mask, true);
-        $transparent = imagecolorallocatealpha($mask, 0, 0, 0, 127);
-        imagefill($mask, 0, 0, $transparent);
-        $maskColor = imagecolorallocate($mask, 255, 255, 255);
-        imagefilledrectangle($mask, $r, 0, $w - $r, $h, $maskColor);
-        imagefilledrectangle($mask, 0, $r, $w, $h - $r, $maskColor);
-        // 四个圆角
-        imagefilledarc($mask, $r, $r, $r * 2, $r * 2, 180, 270, $maskColor, IMG_ARC_PIE);
-        imagefilledarc($mask, $w - $r, $r, $r * 2, $r * 2, 270, 360, $maskColor, IMG_ARC_PIE);
-        imagefilledarc($mask, $r, $h - $r, $r * 2, $r * 2, 90, 180, $maskColor, IMG_ARC_PIE);
-        imagefilledarc($mask, $w - $r, $h - $r, $r * 2, $r * 2, 0, 90, $maskColor, IMG_ARC_PIE);
-        // 应用遮罩
-        imagesavealpha($img, true);
-        imagealphablending($img, true);
-        imagecopy($img, $mask, $x, $y, 0, 0, $w, $h);
-        if (PHP_VERSION_ID < 80000) {
-            imagedestroy($mask);
-        }
     }
     
     /**
