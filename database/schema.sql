@@ -46,9 +46,7 @@ CREATE TABLE IF NOT EXISTS `admin_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员表';
 
 -- 初始管理员账号（密码: admin888）
-INSERT INTO `admin_users` (`id`, `username`, `password`, `admin_dir`) VALUES
 (1, 'admin', '$2y$10$default_hash_replace_me', 'admin');
 
 -- 初始配置数据
-INSERT INTO `config_data` (`id`, `basic_json`, `system_json`) VALUES
 (1, '{}', '{"theme_id":"default_bento"}');
