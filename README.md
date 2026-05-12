@@ -20,15 +20,23 @@
 
 ## 📦 5分钟上手
 
-1. 解压到网站目录
-2. 设置权限 `chown -R www:www . && chmod -R 777 posts/ assets/music/ config/`
-3. 访问 `https://你的域名/install.php`
-4. 填写数据库信息，点击安装
-5. 完成！
+```bash
+# 1. 下载并解压
+wget https://github.com/yunlianw/homepage/releases/download/v1.1.0/personal-homepage-v1.1.0.tar.gz
+tar -xzvf personal-homepage-v1.1.0.tar.gz
+
+# 2. 设置权限
+chown -R www:www .
+chmod -R 755 .
+chmod -R 777 posts/ assets/music/ config/
+
+# 3. 访问安装向导
+# https://你的域名/install.php
+```
 
 详见 [INSTALL.md](INSTALL.md)
 
-## 🎭 主题预览
+## 🎭 内置主题
 
 | 主题 | 风格 | 特点 |
 |------|------|------|
@@ -39,15 +47,15 @@
 ## 📁 目录结构
 
 ```
-├── install.php          # 安装向导（用完可删）
-├── admin/               # 后台管理（目录名可自定义）
+├── install.php          # 安装向导
+├── admin/               # 后台管理
 │   ├── login.php        # 登录页
-│   ├── settings.php     # 管理员设置（密码/目录）
+│   ├── settings.php     # 管理员设置
 │   ├── config.php       # 站点配置
 │   ├── articles.php     # 动态管理
 │   └── generate.php     # 一键生成
 ├── config/
-│   ├── config.php       # 主配置（安装后自动生成）
+│   ├── config.php       # 主配置（安装后生成）
 │   ├── config.sample.php # 配置模板
 │   └── VERSION.php      # 版本号
 ├── core/                # 核心类库
@@ -64,14 +72,8 @@
 │   ├── js/              # 脚本
 │   └── music/           # 音乐文件目录
 ├── database/            # 数据库文件
-│   ├── gerenzhuye.sql   # 完整数据（含演示）
-│   └── schema.sql       # 纯结构
 ├── posts/               # 生成的文章页
-├── index.html           # 生成的首页
-├── INSTALL.md           # 安装指南
-├── CHANGELOG.md         # 更新日志
-├── README.md            # 本文件
-└── LICENSE              # MIT许可证
+└── index.html           # 生成的首页
 ```
 
 ## 🎵 音乐播放器
@@ -113,6 +115,10 @@
 ## 👤 作者
 
 牛马一号 🐮
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
 
 ---
 

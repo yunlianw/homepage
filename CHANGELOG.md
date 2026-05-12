@@ -1,5 +1,29 @@
 # 个人主页展示系统 - 更新日志
 
+## v1.2.0 (2026-05-12)
+
+### 🖼 Favicon图标管理
+
+**新增功能**
+- SEO设置中新增Favicon图标管理区域
+- 支持上传自定义图标（PNG/JPG/GIF/ICO/SVG）
+- 文字生成图标功能（输入文字 + 选择颜色 → 自动生成favicon）
+- 8种预设配色：蓝、紫、绿、橙、红、青、粉、深色
+- 支持中文文字生成（使用DroidSansFallback字体）
+- 生成32x32 + 16x16双尺寸图标
+- 生成时自动注入 `<link rel="icon">` 到所有页面
+- 上传图片自动缩放为32x32 PNG格式
+
+**新增文件**
+- `core/FaviconGenerator.php` - 文字生成favicon类
+- `admin/favicon.php` - 上传/生成/预览接口
+
+**修改文件**
+- `templates/admin/config_form.php` - 添加favicon上传和生成UI
+- `core/Generator.php` - 生成HTML时注入favicon标签
+
+---
+
 ## v1.1.0 (2026-05-11)
 
 ### 🎵 音乐播放器系统

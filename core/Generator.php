@@ -99,6 +99,21 @@ class StaticGenerator {
                 'posts_url' => $postsUrl,
                 'posts_slug' => $postsSlug,
             ];
+            
+            // Favicon注入
+            $faviconHtml = '';
+            $faviconUrl = $CTX['seo']['favicon'] ?? '';
+            if (!empty($faviconUrl)) {
+                $faviconHtml = '<link rel="icon" type="image/png" sizes="32x32" href="' . h($faviconUrl) . '">';
+                // 如果是ico格式
+                if (pathinfo($faviconUrl, PATHINFO_EXTENSION) === 'ico') {
+                    $faviconHtml = '<link rel="icon" type="image/x-icon" href="' . h($faviconUrl) . '">';
+                }
+                // SVG
+                if (pathinfo($faviconUrl, PATHINFO_EXTENSION) === 'svg') {
+                    $faviconHtml = '<link rel="icon" type="image/svg+xml" href="' . h($faviconUrl) . '">';
+                }
+            }
 
             // 全局插件注入（音乐播放器等）
             $globalPlugins = render_global_music($CTX['system'] ?? []);
@@ -115,6 +130,10 @@ class StaticGenerator {
             ob_end_clean();
             if (empty($indexContent)) {
                 throw new Exception('主页生成结果为空，模板可能有PHP错误');
+            }
+            // 注入favicon到 </head> 前
+            if ($faviconHtml && strpos($indexContent, '</head>') !== false) {
+                $indexContent = str_replace('</head>', $faviconHtml . "\n</head>", $indexContent);
             }
             // 注入全局插件到 </body> 前
             if ($globalPlugins && strpos($indexContent, '</body>') !== false) {
@@ -135,6 +154,10 @@ class StaticGenerator {
                 if (empty($content)) {
                     $logs[] = ['type' => 'err', 'msg' => "✗ {$postsSlug}/{$article['id']}.html 生成结果为空"];
                     continue;
+                }
+                // 注入favicon
+                if ($faviconHtml && strpos($content, '</head>') !== false) {
+                    $content = str_replace('</head>', $faviconHtml . "\n</head>", $content);
                 }
                 // 注入全局插件
                 if ($globalPlugins && strpos($content, '</body>') !== false) {

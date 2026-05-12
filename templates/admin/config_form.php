@@ -249,6 +249,59 @@
     <div class="field"><label>网站标题</label><input name="seo[title]" value="<?=h($SEO['title']??'')?>"></div>
     <div class="field"><label>关键词</label><input name="seo[keywords]" value="<?=h($SEO['keywords']??'')?>"></div>
     <div class="field"><label>描述</label><textarea name="seo[description]" rows="2"><?=h($SEO['description']??'')?></textarea></div>
+
+    <h4 style="margin:20px 0 12px;font-size:14px">🖼 Favicon 图标</h4>
+    <p style="color:var(--muted);font-size:13px;margin-bottom:12px">浏览器标签页显示的小图标，可上传或用文字生成</p>
+    <?php $faviconUrl = $SEO['favicon'] ?? ''; ?>
+    <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap">
+        <!-- 当前favicon -->
+        <div style="text-align:center">
+            <div style="width:64px;height:64px;border:2px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:rgba(255,255,255,0.03)" id="faviconPreview">
+                <?php if($faviconUrl): ?>
+                    <img src="<?=h($faviconUrl)?>" style="width:48px;height:48px;image-rendering:pixelated" id="faviconImg">
+                <?php else: ?>
+                    <span style="color:var(--muted);font-size:11px">暂无</span>
+                <?php endif; ?>
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">当前图标</div>
+        </div>
+        <!-- 上传区域 -->
+        <div style="flex:1;min-width:200px">
+            <div style="margin-bottom:10px">
+                <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-size:13px;font-weight:500">
+                    📤 上传图标
+                    <input type="file" id="faviconUpload" accept="image/*,.ico,.svg" style="display:none">
+                </label>
+                <span style="font-size:11px;color:var(--muted);margin-left:8px">PNG/JPG/ICO/SVG</span>
+            </div>
+            <div id="uploadMsg" style="font-size:12px;color:var(--muted)"></div>
+        </div>
+    </div>
+
+    <!-- 文字生成 -->
+    <div style="margin-top:16px;padding:14px;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:500;margin-bottom:10px">✨ 文字生成图标</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input type="text" id="favText" value="峰" placeholder="输入1-2个字" maxlength="2" style="width:80px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:14px;text-align:center">
+            <select id="favColor" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text);font-size:13px">
+                <option value="blue">🔵 蓝色</option>
+                <option value="purple">🟣 紫色</option>
+                <option value="green">🟢 绿色</option>
+                <option value="orange">🟠 橙色</option>
+                <option value="red">🔴 红色</option>
+                <option value="teal">🩵 青色</option>
+                <option value="pink">🩷 粉色</option>
+                <option value="dark">⬛ 深色</option>
+            </select>
+            <button type="button" class="btn" onclick="previewFavicon()" style="padding:6px 14px;font-size:13px">预览</button>
+            <button type="button" class="btn primary" onclick="generateFavicon()" style="padding:6px 14px;font-size:13px">生成并使用</button>
+        </div>
+        <div id="favGenPreview" style="margin-top:10px;display:none">
+            <img id="favGenImg" style="width:32px;height:32px;image-rendering:pixelated;border:1px solid var(--border);border-radius:6px">
+            <span style="font-size:11px;color:var(--muted);margin-left:8px">预览效果</span>
+        </div>
+    </div>
+    <input type="hidden" name="seo[favicon]" id="faviconUrl" value="<?=h($faviconUrl)?>">
     <h4 style="margin:24px 0 12px;font-size:14px">🎵 背景音乐</h4>
     <label style="display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px"><input type="checkbox" name="music_enabled" value="1" <?=!empty($SYS['music']['enabled'])?'checked':''?>> 启用背景音乐</label>
     <div class="field"><label>播放列表（每行一首：标题|URL）</label>
@@ -385,4 +438,64 @@ function updateThemeDesc(){
 
 // 初始化tab
 switchTab('<?=$tab?>');
+
+// === Favicon功能 ===
+// 上传favicon
+document.getElementById('faviconUpload').addEventListener('change', function(e){
+  var file = e.target.files[0];
+  if(!file) return;
+  var fd = new FormData();
+  fd.append('favicon', file);
+  fetch('favicon.php?action=upload', {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){
+        document.getElementById('faviconUrl').value = d.url;
+        document.getElementById('faviconPreview').innerHTML = '<img src="'+d.url+'?t='+Date.now()+'" style="width:48px;height:48px;image-rendering:pixelated" id="faviconImg">';
+        document.getElementById('uploadMsg').textContent = '✓ ' + d.msg;
+        document.getElementById('uploadMsg').style.color = 'var(--green)';
+      } else {
+        document.getElementById('uploadMsg').textContent = '✗ ' + d.msg;
+        document.getElementById('uploadMsg').style.color = '#f87171';
+      }
+    });
+});
+
+// 预览生成favicon
+function previewFavicon(){
+  var text = document.getElementById('favText').value.trim();
+  var color = document.getElementById('favColor').value;
+  if(!text){ return; }
+  fetch('favicon.php?action=preview&text='+encodeURIComponent(text)+'&color='+color)
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){
+        document.getElementById('favGenImg').src = d.preview;
+        document.getElementById('favGenPreview').style.display = 'block';
+      }
+    });
+}
+
+// 生成并使用favicon
+function generateFavicon(){
+  var text = document.getElementById('favText').value.trim();
+  var color = document.getElementById('favColor').value;
+  if(!text){ return; }
+  var fd = new FormData();
+  fd.append('text', text);
+  fd.append('color', color);
+  fetch('favicon.php?action=generate', {method:'POST', body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.ok){
+        document.getElementById('faviconUrl').value = d.url;
+        document.getElementById('faviconPreview').innerHTML = '<img src="'+d.url+'?t='+Date.now()+'" style="width:48px;height:48px;image-rendering:pixelated" id="faviconImg">';
+        document.getElementById('uploadMsg').textContent = '✓ ' + d.msg;
+        document.getElementById('uploadMsg').style.color = 'var(--green)';
+      } else {
+        document.getElementById('uploadMsg').textContent = '✗ ' + d.msg;
+        document.getElementById('uploadMsg').style.color = '#f87171';
+      }
+    });
+}
 </script>
