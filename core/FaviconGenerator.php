@@ -122,7 +122,18 @@ class FaviconGenerator {
      * 查找可用的中文字体
      */
     private static function findFont(): ?string {
-        // 常见字体路径
+        // 优先使用网站目录下的字体（绕过open_basedir限制）
+        $webFonts = [
+            ROOT_PATH . '/assets/fonts/DroidSansFallbackFull.ttf',
+            ROOT_PATH . '/assets/fonts/wqy-zenhei.ttc',
+        ];
+        foreach ($webFonts as $font) {
+            if (file_exists($font)) {
+                return $font;
+            }
+        }
+        
+        // 系统字体路径（可能在open_basedir限制下无法访问）
         $fonts = [
             '/usr/share/fonts/truetype/droid/DroidSansFallbackFull.ttf', // Debian Droid（中文）
             '/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc',           // WenQuanYi
