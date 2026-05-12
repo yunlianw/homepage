@@ -3,7 +3,7 @@
 ## 目录结构
 
 ```
-cf.5276.net/
+your-domain.com/
 ├── config/
 │   ├── config.php          # 数据库配置（安装时生成config.php）
 │   └── VERSION.php         # 版本号管理

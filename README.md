@@ -26,11 +26,6 @@
 - [更新日志](CHANGELOG.md)
 - [安装指南](INSTALL.md)
 
-## 🌐 演示
-
-- 官方演示: https://cf.5276.net
-- 后台地址: https://cf.5276.net/admin/login.php (admin / admin888)
-
 ## 📦 版本
 
 | 版本 | 日期 | 说明 |
