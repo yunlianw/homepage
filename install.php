@@ -55,12 +55,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 2) {
             $pdo->exec("CREATE DATABASE IF NOT EXISTS `{$db_name}` DEFAULT CHARSET utf8mb4");
             $pdo->exec("USE `{$db_name}`");
 
-            // 导入SQL
-            $sqlFile = __DIR__ . '/database/gerenzhuye.sql';
-            if (file_exists($sqlFile)) {
-                $sql = file_get_contents($sqlFile);
-                // 分割并执行
-                $pdo->exec($sql);
+            // 导入SQL（优先schema.sql，纯净安装）
+            $sqlFiles = [
+                __DIR__ . '/database/schema.sql',      // 纯净版
+                __DIR__ . '/database/gerenzhuye.sql',  // 演示版（可选）
+            ];
+            foreach ($sqlFiles as $sqlFile) {
+                if (file_exists($sqlFile)) {
+                    $sql = file_get_contents($sqlFile);
+                    // 执行SQL（支持多条语句）
+                    $pdo->exec($sql);
+                    break; // 只导入一个
+                }
             }
 
             // 更新管理员密码
